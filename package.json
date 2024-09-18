@@ -1,0 +1,16 @@
+{
+  "name": "5.task-management-app-enhancement",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.0",
+    "nodemon": "^3.1.5",
+    "socket.io": "^4.7.5"
+  }
+}

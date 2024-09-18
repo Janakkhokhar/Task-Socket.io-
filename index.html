@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Management</title>
+    <script src="/socket.io/socket.io.js"></script> 
+</head>
+
+<body>
+    <h1>Real-Time Task Management</h1>
+
+    <!-- Form to add a new task -->
+    <form id="task-form">
+        <input type="text" id="task-name" placeholder="Task name" required>
+        <select id="task-status">
+            <option value="">Select Status</option>
+            <option value="Incomplete">Incomplete</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+        </select>
+        <button type="submit" id="viewtask">Add Task</button>
+    </form>
+
+    <!-- List to display tasks -->
+    <ul id="task-list"></ul>
+
+    <!-- Form to add a comment -->
+    <form id="comment-form">
+        <input type="text" id="comment-task-id" placeholder="Task ID" required>
+        <input type="text" id="comment-text" placeholder="Your comment" required>
+        <button type="submit">Add Comment</button>
+    </form>
+
+    <script>
+        const socket = io(); // Connect to the server
+
+
+        const taskForm = document.getElementById('task-form');
+        taskForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const taskName = document.getElementById('task-name').value;
+            const taskStatus = document.getElementById('task-status').value;
+
+            if (taskStatus === '') {
+                alert('Please select a status.');
+                return;
+            }
+
+            
+            socket.emit('add task', { name: taskName, status: taskStatus });
+
+          
+            taskForm.reset();
+        });
+
+        // 'task added' event
+        socket.on('task added', (newTask) => {
+            const taskList = document.getElementById('task-list');
+            const taskItem = document.createElement('li');
+            taskItem.innerText = `Task: ${newTask.name} - Status: ${newTask.status}`;
+            taskList.appendChild(taskItem);
+        });
+
+
+        const commentForm = document.getElementById('comment-form');
+        commentForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const taskId = document.getElementById('comment-task-id').value;
+            const commentText = document.getElementById('comment-text').value;
+
+            socket.emit('add comment', { taskId, newComment: commentText });
+
+      
+            commentForm.reset();
+        });
+
+        //'task updated' 
+        socket.on('task updated', (updatedTask) => {
+            const taskItems = document.querySelectorAll('#task-list li');
+            taskItems.forEach(item => {
+                if (item.innerText.includes(`Task: ${updatedTask.name}`)) {
+                    item.innerText = `Task: ${updatedTask.name} - Status: ${updatedTask.status}`;
+                }
+            });
+        });
+
+        //  'comment added' event
+        socket.on('comment added', ({ taskId, newComment }) => {
+            const taskItems = document.querySelectorAll('#task-list li');
+            taskItems.forEach(item => {
+                if (item.innerText.includes(`Task: ${taskId}`)) {
+                    item.innerText += ` - Comment: ${newComment}`;
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>
